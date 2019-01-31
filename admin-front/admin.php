@@ -25,51 +25,128 @@
 <body>
     <div id="list-users">
         <center><h1>Accueil administration</h1></center>
-        <center><button class="btn btn-success" role="button" id="onShowUser">AJOUTER</button></center>
-        <div class="col-lg-8 offset-2"><h2>Gestion des utilisateurs</h2></div>
-        <div class="col-lg-8 offset-2">
-        <table class="table">
-            <thead class="thead-dark">
-            <tr>
-                <th scope="col">#UID</th>
-                <th scope="col">SN</th>
-                <th scope="col">GivenName</th>
-                <th scope="col">CN</th>
-                <th scope="col">UID</th>
-                <th scope="col">Home Directory</th>
-                <th scope="col">Action</th>
-            </tr>
-            </thead>
-            <tbody>
-                <?php
+        <fieldset>
+            <div class="col-lg-8 offset-2" style="margin-bottom: 20px !important">
+                    <legend>Gestion des utilisateurs</legend>
+                    <center><button class="btn btn-success btn-sm" role="button" id="onShowUser">AJOUTER</button></center>
+            </div>
+            <div class="col-lg-8 offset-2">
+                    <table class="table">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#UID</th>
+                            <th scope="col">SN</th>
+                            <th scope="col">GivenName</th>
+                            <th scope="col">CN</th>
+                            <th scope="col">UID</th>
+                            <th scope="col">Home Directory</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                                $users = findAll($connection, $basedn);
+
+                                foreach ($users as $user) {
+                                    if($user['uid'][0]){
+                                        echo '<tr>
+                                            <td>' . $user['uidnumber'][0] . '</td>
+                                            <td>' . $user['sn'][0] . '</td>
+                                            <td>' . $user['givenname'][0] . '</td>
+                                            <td>' . $user['cn'][0] . '</td>
+                                            <td>' . $user['uid'][0] . '</td>
+                                            <td>' . $user['homedirectory'][0] . '</td>
+                                            <td>
+                                                <a href="#"><img src="../img/edit.png" height="30px"></a>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <a href="../process_delete_user.php?uid=' . $user['uid'][0] .'"><img src="../img/delete.png" height="30px"></a>
+                                            </td>
+                                          </tr>';
+                                    }
+                                }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+        </fieldset>
+        <fieldset>
+            <div class="col-lg-8 offset-2" style="margin-bottom: 20px !important">
+                <legend>Gestion des groupes</legend>
+                <center><button class="btn btn-success btn-sm" role="button" id="onShowUser">AJOUTER</button></center>
+            </div>
+            <div class="col-lg-8 offset-2">
+                <table class="table">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#UID</th>
+                        <th scope="col">SN</th>
+                        <th scope="col">GivenName</th>
+                        <th scope="col">CN</th>
+                        <th scope="col">UID</th>
+                        <th scope="col">Home Directory</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php
                     $users = findAll($connection, $basedn);
 
                     foreach ($users as $user) {
                         if($user['uid'][0]){
                             echo '<tr>
-                                <td>' . $user['uidnumber'][0] . '</td>
-                                <td>' . $user['sn'][0] . '</td>
-                                <td>' . $user['givenname'][0] . '</td>
-                                <td>' . $user['cn'][0] . '</td>
-                                <td>' . $user['uid'][0] . '</td>
-                                <td>' . $user['homedirectory'][0] . '</td>
-                                <td>
-                                    <a href="#"><img src="../img/edit.png" height="30px"></a>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                    <a href="#"><img src="../img/delete.png" height="30px"></a>
-                                </td>
-                              </tr>';
+                                            <td>' . $user['uidnumber'][0] . '</td>
+                                            <td>' . $user['sn'][0] . '</td>
+                                            <td>' . $user['givenname'][0] . '</td>
+                                            <td>' . $user['cn'][0] . '</td>
+                                            <td>' . $user['uid'][0] . '</td>
+                                            <td>' . $user['homedirectory'][0] . '</td>
+                                            <td>
+                                                <a href="#"><img src="../img/edit.png" height="30px"></a>
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <a href="../process_delete_user.php?uid=' . $user['uid'][0] .'"><img src="../img/delete.png" height="30px"></a>
+                                            </td>
+                                          </tr>';
                         }
                     }
-                ?>
-            </tbody>
-        </table>
-        </div>
+                    ?>
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
         <div class="modal" tabindex="-1" role="dialog" id="userForm">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Ajouter un utilisateur</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="sr-only">Login</label>
+                        <input type="text" id="inputUserLogin" class="form-control" placeholder="Login" required autofocus>
+
+                        <label class="sr-only">Nom</label>
+                        <input type="text" id="inputUserName" class="form-control" placeholder="Nom" required autofocus>
+
+                        <label class="sr-only">Prénom</label>
+                        <input type="text" id="inputUserFirstname" class="form-control" placeholder="Prénom" required autofocus>
+
+                        <label class="sr-only">Mot de passe</label>
+                        <input type="password" id="inputUserPassword" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary" id="save">Enregistrer</E></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" tabindex="-1" role="dialog" id="modifyUser">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier un utilisateur</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -112,7 +189,10 @@
                 password: $('#inputUserPassword').val()
             })
         }).done(function (data) {
-            console.log(data);
+            if (data.success) {
+                $('.modal').find('input').val('');
+                location.reload();
+            }
         });
     });
 
