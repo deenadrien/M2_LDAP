@@ -32,7 +32,7 @@
         return false;
     }
 
-    function findAll($ldap_connection, $base_dn) {
+    function findAllUsers($ldap_connection, $base_dn) {
 
         $filter = "(uid=*)";
 
@@ -44,6 +44,18 @@
         return $entries;
     }
 
+    function findAllGroups($ldap_connection, $base_dn) {
+
+        $filter = "(ou=*)";
+
+        ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        $result = ldap_search($ldap_connection,$base_dn, $filter) or exit("Unable to search");
+
+        $entries = ldap_get_entries($ldap_connection, $result);
+
+        return $entries;
+    }
 
 
 

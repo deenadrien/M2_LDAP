@@ -12,11 +12,11 @@
 
     $ldap_dn = "cn=admin,dc=declercq,dc=teub";
 
-    $cn = htmlspecialchars($json['name'] . ' ' . $json['firstname']);
-    $givenName = htmlspecialchars($json['firstname']);
-    $sn = htmlspecialchars($json['name']);
-    $uid = htmlspecialchars($json['login']);
-    $homedirectory = htmlspecialchars('/home/' . $json['login']);
+    $cn = htmlspecialchars($json['sn'] . ' ' . $json['givenName']);
+    $givenName = htmlspecialchars($json['givenName']);
+    $sn = htmlspecialchars($json['sn']);
+    $uid = htmlspecialchars($json['uid']);
+    $homedirectory = htmlspecialchars('/home/' . $uid);
     $password = htmlspecialchars($json['password']);
 
     $ds = ldap_connect("localhost") or die ("Could not connect to LDAP Server");
@@ -31,15 +31,15 @@
         $info["cn"] = $cn;
         $info["givenName"] = $givenName;
         $info["sn"] = $sn;
-        $info["uid"] = $uid;
         $info["homeDirectory"] = $homedirectory;
         $info['userPassword'] = $password;
+        $info["loginShell"] = "/bin/bash";
         $info["uidNumber"] = $random;
         $info["gidNumber"] = $random;
-        $info["loginShell"] = "/bin/bash";
         $info['objectClass'] = ["top", "person", "organizationalPerson" ,"inetOrgPerson", "posixAccount", "shadowAccount"];
 
-        $r = ldap_add($ds,"uid=$uid,ou=people,dc=declercq,dc=teub",$info);
+        $r = ldap_modify($ds,"uid=$uid,ou=people,dc=declercq,dc=teub",$info);
+
 
         $sr = ldap_search($ds,"dc=declercq,dc=teub","uid=$uid");
 
