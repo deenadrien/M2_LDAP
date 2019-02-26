@@ -72,32 +72,68 @@
         <fieldset>
             <div class="col-lg-8 offset-2" style="margin-bottom: 20px !important">
                 <legend>Gestion des groupes</legend>
-                <center><button class="btn btn-success btn-sm" role="button" id="onShowUser">AJOUTER</button></center>
+                <center><button class="btn btn-success btn-sm" role="button" id="onShowGroup">AJOUTER</button></center>
             </div>
             <div class="col-lg-8 offset-2">
                 <table class="table">
                     <thead class="thead-dark">
                     <tr>
-                        <th scope="col">#UID</th>
-                        <th scope="col">SN</th>
+                        <th scope="col">#GID</th>
+                        <th scope="col">Titre</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Utilisateurs membres</th>
+                        <th scope="col">Utilisateurs non membres</th>
                         <th scope="col">Action</th>
                     </tr>
                     </thead>
                     <tbody>
                     <?php
-                    $users = findAllGroups($connection, $basedn);
+                    $groups = findAllGroups($connection, $basedn);
 
-                    foreach ($users as $user) {
-                        if($user['ou'][0]){
-                            echo '<tr>
-                                            <td>' . $user['dn'][0] . '</td>
-                                            <td>' . $user['ou'][0] . '</td>
+                    foreach ($groups as $group) {
+                        $description = isset($group['description']) ? $group['description'][0] : "";
+                        if($group['cn'][0]){
+
+                            $members = findUsersOfGroup($connection,$basedn,$group['cn'][0]);
+                            $notmembers = findAllUsers($connection,$basedn);
+
+                            echo '
+                                    <tr>
+                                            <form action="../process_delete_user_to_group.php" method="post">
+                                                <td>' . $group['gidnumber'][0] . '</td>
+                                                <td>' . $group['cn'][0] . '<input type="hidden" value="' . $group['cn'][0] .'" name="cn"></td>
+                                                <td>' . $description . '</td>
+                                                <td>
+                                                    
+                                                    <select name="uid">
+                                                        <option value="">Choisir...</option>';
+                                                        $i = 0;
+                                                        foreach($members[0]["memberuid"] as $member){
+                                                            if ($i) {
+                                                                echo '<option value="' . $member . '">' . $member . '</option>';
+                                                            }
+                                                            $i++;
+                                                        }
+                                                echo '</select>
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                            </td>
                                             <td>
-                                                <a href="#"><img src="../img/edit.png" height="30px"></a>
-                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                <a href="../process_delete_user.php?uid=' . $user['ou'][0] .'"><img src="../img/delete.png" height="30px"></a>
+                                                <form action="../process_add_user_to_group.php" method="post">
+                                                <select name="uid">';
+                                                  foreach($notmembers as $notmember){
+                                                      echo '<option value="' . $notmember['uid'][0] . '">' . $notmember['uid'][0] . '</option>';
+                                                  }
+                                                echo '</select>
+                                                <button type="submit" class="btn btn-success">Ajouter</button></form>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-default onUpdateGroup" data-gid="' . $group['gidnumber'][0] . '" role="button" ><img src="../img/edit.png" height="30px"></button>
+
+                                                <a href="../process_delete_group.php?gidnumber=' . $group['gidnumber'][0] .'"><img src="../img/delete.png" height="30px"></a>
                                             </td>
                                           </tr>';
+
                         }
                     }
                     ?>
@@ -134,6 +170,28 @@
                 </div>
             </div>
         </div>
+        <div class="modal" tabindex="-1" role="dialog" id="groupForm">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ajouter un groupe</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="sr-only">Nom</label>
+                        <input type="text" id="titleGroup" class="form-control" placeholder="Titre." required autofocus>
+                        <label class="sr-only">Nom</label>
+                        <input type="text" id="descriptionGroup" class="form-control" placeholder="Desc." required autofocus>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary" id="saveGroup">Enregistrer</E></button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="modal" tabindex="-1" role="dialog" id="modifyUser">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -166,12 +224,38 @@
                 </div>
             </div>
         </div>
+        <div class="modal" tabindex="-1" role="dialog" id="modifyGroup">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier un groupe</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="gidGroup" class="form-control" placeholder="Desc." required autofocus readonly>
+                        <input type="text" id="cnGroup" class="form-control" placeholder="CN" required autofocus readonly>
+                        <label class="sr-only">Nom</label>
+                        <input type="text" id="descriptionGroup" class="form-control" placeholder="Desc." required autofocus>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                        <button type="button" class="btn btn-primary" id="updateGroup">Enregistrer</E></button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 <script type="application/javascript">
     $( document ).ready(function() {
         $('#onShowUser').click(function () {
             $('#userForm').modal('show');
+        });
+
+        $('#onShowGroup').click(function () {
+            $('#groupForm').modal('show');
         });
 
         $('.onUpdateUser').click(function () {
@@ -220,6 +304,57 @@
                     givenName: modal.find('#givenName').val(),
                     homeDirectory: modal.find('#homeDirectory').val(),
                     password: modal.find('#password').val()
+                })
+            }).done(function (data) {
+                if (data.success) {
+                    modal.find('input').val('');
+                    location.reload();
+                }
+            });
+        });
+
+        $('#saveGroup').click(function () {
+            $.post("../process_add_group.php", {
+                data: JSON.stringify({
+                    gid: $('#inputGidGroup').val(),
+                    title: $('#titleGroup').val(),
+                    description: $('#descriptionGroup').val()
+                })
+            }).done(function (data) {
+                if (data.success) {
+                    $('.modal').find('input').val('');
+                    location.reload();
+                }
+            });
+        });
+
+        $('.onUpdateGroup').click(function () {
+
+            $.post("process_get_group.php", {
+                data: JSON.stringify({
+                    gidNumber: $(this).data('gid')
+                })
+            }).done(function (data) {
+                if (data.group) {
+                    var modal = $('#modifyGroup');
+
+                    modal.find('#cnGroup').val(data.group['0'].cn['0']);
+                    modal.find('#gidGroup').val(data.group['0'].gidnumber['0']);
+                    modal.find('#descriptionGroup').val(data.group['0'].description['0']);
+                }
+            });
+
+            $('#modifyGroup').modal('show');
+        });
+
+        $('#updateGroup').click(function () {
+            var modal = $('#modifyGroup');
+
+            $.post("../process_update_group.php", {
+                data: JSON.stringify({
+                    gid: modal.find('#gidGroup').val(),
+                    cn: modal.find('#cnGroup').val(),
+                    description: modal.find('#descriptionGroup').val()
                 })
             }).done(function (data) {
                 if (data.success) {

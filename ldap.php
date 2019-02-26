@@ -46,7 +46,7 @@
 
     function findAllGroups($ldap_connection, $base_dn) {
 
-        $filter = "(ou=*)";
+        $filter = "(objectClass=posixGroup)";
 
         ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 
@@ -57,6 +57,29 @@
         return $entries;
     }
 
+    function findUsersOfGroup($ldap_connection, $base_dn, $group) {
+
+        $filter = "(cn=$group)";
+
+        ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        $result = ldap_search($ldap_connection,"ou=group," . $base_dn, $filter) or exit("Unable to search");
+        $entries = ldap_get_entries($ldap_connection, $result);
+
+        return $entries;
+    }
+
+    function findUsersNotOfGroup($ldap_connection, $base_dn, $group) {
+
+        $filter = "(!(cn=$group))";
+
+        ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+        $result = ldap_search($ldap_connection,"ou=group," . $base_dn, $filter) or exit("Unable to search");
+        $entries = ldap_get_entries($ldap_connection, $result);
+
+        return $entries;
+    }
 
 
 
