@@ -23,8 +23,6 @@
 
     ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 
-    $random = rand(1110, 2110);
-
     if ($ds) {
 
         $r = ldap_bind($ds, $ldap_dn,"bite");
@@ -34,8 +32,8 @@
         $info["homeDirectory"] = $homedirectory;
         $info['userPassword'] = $password;
         $info["loginShell"] = "/bin/bash";
-        $info["uidNumber"] = $random;
-        $info["gidNumber"] = $random;
+        //$info["uidNumber"] = $random;
+        //$info["gidNumber"] = $random;
         $info['objectClass'] = ["top", "person", "organizationalPerson" ,"inetOrgPerson", "posixAccount", "shadowAccount"];
 
         $r = ldap_modify($ds,"uid=$uid,ou=people,dc=declercq,dc=teub",$info);

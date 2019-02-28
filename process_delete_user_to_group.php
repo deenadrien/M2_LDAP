@@ -31,5 +31,5 @@ if ($ds) {
 
 ldap_close($ds);
 
-//header('Location:admin-front/admin.php');
+header('Location:admin-front/admin.php');
 

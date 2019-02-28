@@ -1,0 +1,33 @@
+{
+    "count": 1,
+    "0": {
+        "objectclass": {
+            "count": 2,
+            "0": "top",
+            "1": "posixGroup"
+        },
+        "0": "objectclass",
+        "description": {
+            "count": 1,
+            "0": "eleves de poudlard"
+        },
+        "1": "description",
+        "cn": {
+            "count": 1,
+            "0": "poudlard"
+        },
+        "2": "cn",
+        "gidnumber": {
+            "count": 1,
+            "0": "1524"
+        },
+        "3": "gidnumber",
+        "memberuid": {
+            "count": 1,
+            "0": "harry"
+        },
+        "4": "memberuid",
+        "count": 5,
+        "dn": "cn=poudlard,ou=group,dc=declercq,dc=teub"
+    }
+}

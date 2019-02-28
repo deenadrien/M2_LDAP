@@ -4,6 +4,11 @@
     $basedn = "dc=declercq,dc=teub";
 
     $connection = open($ldap);
+
+    session_start();
+    if($_SESSION['secure'] != true){
+        header('Location: ../index.php');
+    }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -24,11 +29,19 @@
 </head>
 <body>
     <div id="list-users">
+        <div class="text-right" style="padding:2%;">
+            <a href="../process_deconnexion.php"><button class="btn btn-warning text-right">Déconnexion</button></a>
+        </div>
         <center><h1>Accueil administration</h1></center>
         <fieldset>
             <div class="col-lg-8 offset-2" style="margin-bottom: 20px !important">
                     <legend>Gestion des utilisateurs</legend>
-                    <center><button class="btn btn-success btn-sm" role="button" id="onShowUser">AJOUTER</button></center>
+                    <center>
+                        <button class="btn btn-success btn-sm" role="button" id="onShowUser">AJOUTER</button>
+                        <a href="../process_delete_all_users.php"><button class="btn btn-danger btn-sm" role="button">SUPPRIMER TOUT</button></a>
+                        <a href="../process_export_all_users.php"><button class="btn btn-warning btn-sm" role="button">EXPORT</button></a>
+                        <button class="btn btn-info btn-sm" role="button" id="importFileUsers">IMPORT</button>
+                    </center>
             </div>
             <div class="col-lg-8 offset-2">
                     <table class="table">
@@ -72,7 +85,12 @@
         <fieldset>
             <div class="col-lg-8 offset-2" style="margin-bottom: 20px !important">
                 <legend>Gestion des groupes</legend>
-                <center><button class="btn btn-success btn-sm" role="button" id="onShowGroup">AJOUTER</button></center>
+                <center>
+                    <button class="btn btn-success btn-sm" role="button" id="onShowGroup">AJOUTER</button>
+                    <a href="../process_delete_all_groups.php"><button class="btn btn-danger btn-sm" role="button">SUPPRIMER TOUT</button></a>
+                    <a href="../process_export_all_groups.php"><button class="btn btn-warning btn-sm" role="button">EXPORT</button></a>
+                    <button class="btn btn-info btn-sm" id="importFileGroups" role="button">IMPORT</button>
+                </center>
             </div>
             <div class="col-lg-8 offset-2">
                 <table class="table">
@@ -95,7 +113,7 @@
                         if($group['cn'][0]){
 
                             $members = findUsersOfGroup($connection,$basedn,$group['cn'][0]);
-                            $notmembers = findAllUsers($connection,$basedn);
+                            $notmembers = findUsersNotOfGroup($connection,$basedn,$group['cn'][0]);
 
                             echo '
                                     <tr>
@@ -104,7 +122,6 @@
                                                 <td>' . $group['cn'][0] . '<input type="hidden" value="' . $group['cn'][0] .'" name="cn"></td>
                                                 <td>' . $description . '</td>
                                                 <td>
-                                                    
                                                     <select name="uid">
                                                         <option value="">Choisir...</option>';
                                                         $i = 0;
@@ -120,9 +137,13 @@
                                             </td>
                                             <td>
                                                 <form action="../process_add_user_to_group.php" method="post">
-                                                <select name="uid">';
+                                                <input type="hidden" value="' . $group['cn'][0] .'" name="cn">
+                                                <select name="uid">
+                                                    <option value="">Choisir...</option>';
                                                   foreach($notmembers as $notmember){
-                                                      echo '<option value="' . $notmember['uid'][0] . '">' . $notmember['uid'][0] . '</option>';
+                                                      if ($notmember['uid'][0]) {
+                                                          echo '<option value="' . $notmember['uid'][0] . '">' . $notmember['uid'][0] . '</option>';
+                                                      }
                                                   }
                                                 echo '</select>
                                                 <button type="submit" class="btn btn-success">Ajouter</button></form>
@@ -141,6 +162,50 @@
                 </table>
             </div>
         </fieldset>
+        <div class="modal" tabindex="-1" role="dialog" id="importGroupModal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Importer un fichier</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="../process_import_group.php" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <label class="sr-only">Fichier</label>
+                            <input type="file" name="groups" class="form-control" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                            <button type="submit" class="btn btn-primary">Télécharger</E></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal" tabindex="-1" role="dialog" id="exportModal">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Importer un fichier</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="../process_import_user.php" method="post" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <label class="sr-only">Fichier</label>
+                            <input type="file" name="users" class="form-control" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                            <button type="submit" class="btn btn-primary">Télécharger</E></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         <div class="modal" tabindex="-1" role="dialog" id="userForm">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -362,6 +427,14 @@
                     location.reload();
                 }
             });
+        });
+
+        $('#importFileUsers').click(function() {
+            $('#exportModal').modal('show');
+        });
+
+        $('#importFileGroups').click(function() {
+            $('#importGroupModal').modal('show');
         });
     });
 
